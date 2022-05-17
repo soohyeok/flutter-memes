@@ -1,69 +1,47 @@
+// Copyright 2021, the Flutter project authors. Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
 
-import 'dart:math';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:gallery_saver/gallery_saver.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:url_strategy/url_strategy.dart';
+import 'package:window_size/window_size.dart';
 
-// Get is for page routing https://pub.dev/packages/get
-import 'package:get/get.dart';
-import 'controller.dart';
+import 'src/app.dart';
 
-import 'memeScreen.dart';
-import 'login.dart';
-//import 'dart:io' as Io;
+void main() {
+  // Use package:url_strategy until this pull request is released:
+  // https://github.com/flutter/flutter/pull/77103
 
+  // Use to setHashUrlStrategy() to use "/#/" in the address bar (default). Use
+  // setPathUrlStrategy() to use the path. You may need to configure your web
+  // server to redirect all paths to index.html.
+  //
+  // On mobile platforms, both functions are no-ops.
+  setHashUrlStrategy();
+  // setPathUrlStrategy();
 
-void main() => runApp(MyApp());
-
-
-
-class MyApp extends StatelessWidget {
-  
-  final String title="The Memeing of Life";
-  
-  final routes = <String, WidgetBuilder>{
-    LoginScreen.tag: (context) => const LoginScreen(),
-    MemeScreen.tag: (context) => const MemeScreen(),
-  };
-
-
-  MyApp({Key? key}) : super(key: key);
-  
-
-  @override
-  Widget build(BuildContext context) {
-
-     final Controller c = Get.put(Controller());
-
-    return GetMaterialApp(
-      title: title,
-      // theme: ThemeData(fontFamily: 'Mango'),
-      home: const LoginScreen(),
-      routes: routes, 
-      /*home: Scaffold(
-        appBar: AppBar(
-          title: Center(
-            child: Text(
-              title,
-              textAlign: TextAlign.right,
-              style: const TextStyle(
-                shadows: [ 
-                  Shadow(color: Color.fromARGB(55, 255, 255, 255), 
-                  blurRadius:10 ) 
-                ], 
-                fontFamily: 'Mango'
-              ),
-            ),
-          ),
-          backgroundColor: const Color.fromARGB(255, 11, 11, 11),
-        ),
-        body: const  MemeScreen()
-      ),*/
-    );
-  }
+  setupWindow();
+  runApp(const Bookstore());
 }
 
+const double windowWidth = 480;
+const double windowHeight = 854;
+
+void setupWindow() {
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+    WidgetsFlutterBinding.ensureInitialized();
+    setWindowTitle('Navigation and routing');
+    setWindowMinSize(const Size(windowWidth, windowHeight));
+    setWindowMaxSize(const Size(windowWidth, windowHeight));
+    getCurrentScreen().then((screen) {
+      setWindowFrame(Rect.fromCenter(
+        center: screen!.frame.center,
+        width: windowWidth,
+        height: windowHeight,
+      ));
+    });
+  }
+}
